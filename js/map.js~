@@ -98,6 +98,7 @@ var tracker = {
 							for(var key in tracker.iss_speeds)
 								totalSpeed += tracker.iss_speeds[key];
 							avgSpeed = Math.floor(totalSpeed / tracker.iss_speeds.length);
+							console.log(avgSpeed);
 						}
 					}
 				}
