@@ -4,11 +4,12 @@ var tracker = {
 	api_interval: 2000,
 	api_response: true,
 	
-	iss_route: [],
+	iss_previous_coords: 0,
 	iss_velocity: {lon: 0, lat: 0},
 	iss_distance: 0, // Distance (Kilometers) between API calls
 	iss_last_call_time: 0,
 	iss_speeds: [], // Store the last 5 speeds recorded so that we can work out an average.
+	iss_path: false, // Stores google map Polyline
 
 	map_container: false,
 	map: false,
@@ -72,11 +73,10 @@ var tracker = {
 				// Store the current time
 				var current_time = new Date().getTime();
 
-				if(tracker.iss_route.length > 0)
+				if(tracker.iss_previous_coords)
 				{
-					var previous_coords = tracker.iss_route[tracker.iss_route.length-1];
-					tracker.iss_velocity.lon = data.iss_position.longitude - previous_coords.lng();
-					tracker.iss_velocity.lat = data.iss_position.latitude - previous_coords.lat();
+					tracker.iss_velocity.lon = data.iss_position.longitude - tracker.iss_previous_coords.lng();
+					tracker.iss_velocity.lat = data.iss_position.latitude - tracker.iss_previous_coords.lat();
 					
 					// Calculate the distance the iss has travelled.
 					tracker.iss_distance = google.maps.geometry.spherical.computeDistanceBetween(previous_coords,coords) / 1000;
@@ -98,7 +98,6 @@ var tracker = {
 							for(var key in tracker.iss_speeds)
 								totalSpeed += tracker.iss_speeds[key];
 							avgSpeed = Math.floor(totalSpeed / tracker.iss_speeds.length);
-							console.log(avgSpeed);
 						}
 					}
 				}
@@ -106,8 +105,8 @@ var tracker = {
 				tracker.iss_last_call_time = current_time;
 
 				// push new coords to iss route array for tracking line
-				tracker.iss_route.push(coords);
-				tracker.drawRoute();
+				tracker.drawRoute(coords);
+				tracker.iss_previous_coords = coords;
 
 				if(!tracker.map_marker) 
 				{
@@ -165,16 +164,19 @@ var tracker = {
 	},
 
 	// Draw a route line
-	drawRoute: function()
+	drawRoute: function(coords)
 	{
-		var path = new google.maps.Polyline({
-			path: tracker.iss_route,
-			strokeColor: "#FF0000",
-			strokeOpacity: 1.0,
-			strokeWeight: 2
-		});
-
-		path.setMap(tracker.map);
+		if(!tracker.iss_path)
+		{
+			tracker.iss_path = new google.maps.Polyline({
+				path: [coords],
+				strokeColor: "#FF0000",
+				strokeOpacity: 1.0,
+				strokeWeight: 2
+			});
+			tracker.iss_path.setMap(tracker.map);
+		}
+		tracker.iss_path.getPath().push(coords);
 	}
 }
 
