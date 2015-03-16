@@ -161,7 +161,7 @@ var tracker = {
 	{
 		$.getJSON('http://api.open-notify.org/iss-pass.json?lat=' + tracker.user_lat + '&lon=' + tracker.user_lon + '&alt=20&n=1&callback=?', function(data) {
 			data['response'].forEach(function (d) {
-				var date = new Date(d['risetime']*1000).toDateString();
+				var date = new Date(d['risetime']*1000).toLocaleString();
 				var duration = Math.round(d['duration'] / 60);
 
 				$(".flyby").removeClass('hide');
