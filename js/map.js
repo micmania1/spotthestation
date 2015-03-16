@@ -161,11 +161,11 @@ var tracker = {
 	{
 		$.getJSON('http://api.open-notify.org/iss-pass.json?lat=' + tracker.user_lat + '&lon=' + tracker.user_lon + '&alt=20&n=1&callback=?', function(data) {
 			data['response'].forEach(function (d) {
-				var date = new Date(d['risetime']*1000).toLocaleString();
+				var date = new Date(d['risetime']*1000);
 				var duration = Math.round(d['duration'] / 60);
 
 				$(".flyby").removeClass('hide');
-				$("#flybydate").html(date);
+				$("#flybydate").html(date.toLocaleTimeString()+', '+date.getDate()+'/'+(date.getMonth()+1)+'/'+date.getFullYear());
 				$("#flybyduration").html(duration);
 			});
 		});
