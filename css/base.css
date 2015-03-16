@@ -200,7 +200,7 @@ body
 .typography h1
 {
 	font-size: 28px;
-	margin-bottom: 10px;
+	margin-bottom: 20px;
 }
 
 .typography h2
@@ -259,4 +259,17 @@ body
 	transition: opacity 1s ease-in-out;
 	-moz-transition: opacity 1s ease-in-out;
 	-webkit-transition: opacity 1s ease-in-out;
+}
+
+.hide {
+	display: none;
+}
+
+.position {
+	padding-bottom: 30px;
+	border-bottom: 1px solid #cdcdcd;
+}
+
+.position,.flyby {
+	margin-top: 30px;
 }

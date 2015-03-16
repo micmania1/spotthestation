@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Spot the Station</title>
+	<title>ISS Tracker &raquo; Track The International Space Station</title>
 	
 	<meta charset='utf-8'> 
 	
@@ -9,31 +9,30 @@
 	<link rel="stylesheet" type="text/css" href="css/base.css" />
 </head>
 <body class="start">
-	<div id="fb-root"></div>
-	<script>(function(d, s, id) {
-	  var js, fjs = d.getElementsByTagName(s)[0];
-	  if (d.getElementById(id)) return;
-	  js = d.createElement(s); js.id = id;
-	  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
-	  fjs.parentNode.insertBefore(js, fjs);
-	}(document, 'script', 'facebook-jssdk'));</script>
-
 	<div id="map"></div>
 	<article id="content">
-		<nav id="controls">
-			<a href="#" title="Previous" class="navigation prev">Prev</a>
-			<a href="#" title="Next" class="navigation next">Next</a>
-		</nav>
-		
 		<div class="typography">
-			<h1>Spot The Station</h1>
-			<p>Did you know you can see the International Space Station from your house? As the third brightest object in the sky, after the sun and moon, the space station is easy to see if you know where and when to look for it.</p>
-			<p><strong>NASA’s Spot the Station service sends you an email or text message a few hours before the space station passes over your house.</strong> The space station looks like a fast-moving plane in the sky, though one with people living and working aboard it more than 200 miles above the ground. It is best viewed on clear nights. For more information on the International Space Station and its mission, visit the <a href="http://www.nasa.gov/mission_pages/station/">space station mission pages</a>.</p>
-			<p><strong>Spot the Station is available worldwide to anyone with an email account or SMS-enabled phone.</strong> Several times a week, Mission Control at NASA’s Johnson Space Center in Houston, TX, determines sighting opportunities for 4,600 locations worldwide.  If your specific city or town isn’t listed, pick one that is fairly close to you.  The space station is visible for a long distance around each of the listed locations.</p>
-		</div>
-		<div class="share">
-			<div class="fb-like social-button" data-send="false" data-layout="button_count" data-width="450" data-show-faces="true" data-font="arial"></div>
-			<div class="twitter-button social-button"><a href="https://twitter.com/share" class="twitter-share-button" data-via="micmania1">Tweet</a></div>
+			<h1>ISS Tracker</h1>
+
+			<div class="position hide">
+				<h2>Position</h2>
+				<h4>Latitude:</h4>
+				<p id="latitude"></p>
+
+				<h4>Longitude:</h4>
+				<p id="longitude"></p>
+
+				<h4>Speed:</h4>
+				<p><span id="speed"></span> km/h</p>
+			</div>
+			<div class="flyby hide">
+				<h2>Next Flyby</h2>
+				<h4>Time</h4>
+				<p id="flybydate"></p>
+
+				<h4>Duration</h4>
+				<p><span id="flybyduration"></span> minutes</p>
+			</div>
 		</div>
 	</article>
 	
@@ -41,7 +40,5 @@
 	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 	<script type="text/javascript" src="js/map.js"></script>
 	
-	<!-- Twitter -->
-	<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
 </body>
 </html>

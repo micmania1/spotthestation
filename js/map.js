@@ -1,6 +1,7 @@
 var tracker = {
 	
-	api_endpoint: "api/location.php",
+	api_endpoint: "http://api.open-notify.org/iss-now.json?callback=?",
+	api_flyby_endpoint: "http://api.open-notify.org/iss-pass.json",
 	api_interval: 2000,
 	api_response: true,
 	
@@ -55,78 +56,71 @@ var tracker = {
 
 	loadMarker: function()
 	{
-		$.ajax({                                                                                                                                                                                                        
-			type: 'GET',                                                                                                                                                                                                 
-			url: tracker.api_endpoint,                                                                                                                                              
-			dataType: 'json',  
-			beforeSend: function()
-			{
-				tracker.api_response = false;
-			},                                                                                                                                                                                           
-			success: function(data) 
-			{
-				tracker.api_response = true;
-				
-				// get new coords
-				var coords = new google.maps.LatLng(data.iss_position.latitude, data.iss_position.longitude);
-				
-				// Store the current time
-				var current_time = new Date().getTime();
+		tracker.api_response = false;
+		$.getJSON(tracker.api_endpoint, function(data) {
+			tracker.api_response = true;
 
-				if(tracker.iss_previous_coords)
+			// get new coords
+			var coords = new google.maps.LatLng(data.iss_position.latitude, data.iss_position.longitude);
+			$("#latitude").html(data.iss_position.latitude);
+			$("#longitude").html(data.iss_position.longitude);
+
+			// Store the current time
+			var current_time = new Date().getTime();
+
+			if(tracker.iss_previous_coords)
+			{
+				tracker.iss_velocity.lon = data.iss_position.longitude - tracker.iss_previous_coords.lng();
+				tracker.iss_velocity.lat = data.iss_position.latitude - tracker.iss_previous_coords.lat();
+
+				// Calculate the distance the iss has travelled.
+				tracker.iss_distance = google.maps.geometry.spherical.computeDistanceBetween(tracker.iss_previous_coords,coords) / 1000;
+
+				if(tracker.iss_last_call_time > 0)
 				{
-					tracker.iss_velocity.lon = data.iss_position.longitude - tracker.iss_previous_coords.lng();
-					tracker.iss_velocity.lat = data.iss_position.latitude - tracker.iss_previous_coords.lat();
-					
-					// Calculate the distance the iss has travelled.
-					tracker.iss_distance = google.maps.geometry.spherical.computeDistanceBetween(tracker.iss_previous_coords,coords) / 1000;
-					
-					if(tracker.iss_last_call_time > 0)
+					var time_since = current_time - tracker.iss_last_call_time;
+					var speed = tracker.iss_distance / ((time_since / 1000) / 60 / 60);
+
+					// Add the speed to our tracker.
+					tracker.iss_speeds.push(speed);
+					if(tracker.iss_speeds.length > 20)
+						tracker.iss_speeds.shift();
+
+					var avgSpeed = 0;
+					if(tracker.iss_speeds.length > 0)
 					{
-						var time_since = current_time - tracker.iss_last_call_time;
-						var speed = tracker.iss_distance / ((time_since / 1000) / 60 / 60);
-						
-						// Add the speed to our tracker.
-						tracker.iss_speeds.push(speed);
-						if(tracker.iss_speeds.length > 20)
-							tracker.iss_speeds.shift();
-						
-						var avgSpeed = 0;
-						if(tracker.iss_speeds.length > 0)
-						{
-							var totalSpeed = 0;
-							for(var key in tracker.iss_speeds)
-								totalSpeed += tracker.iss_speeds[key];
-							avgSpeed = Math.floor(totalSpeed / tracker.iss_speeds.length);
-						}
+						var totalSpeed = 0;
+						for(var key in tracker.iss_speeds)
+							totalSpeed += tracker.iss_speeds[key];
+						avgSpeed = Math.floor(totalSpeed / tracker.iss_speeds.length);
+					}
+					if(avgSpeed > 0) {
+						$("#speed").html(avgSpeed);
+						$('.position.hide').removeClass('hide');
 					}
 				}
-				
-				tracker.iss_last_call_time = current_time;
+			}
 
-				// push new coords to iss route array for tracking line
-				tracker.drawRoute(coords);
-				tracker.iss_previous_coords = coords;
+			tracker.iss_last_call_time = current_time;
 
-				if(!tracker.map_marker) 
-				{
-					tracker.map_marker =  new google.maps.Marker({
-						position: coords,
-						map: tracker.map,
-						title: "ISS",
-						icon: "http://www.n2yo.com/inc/saticon.php?t=0&s=25544&c="
-					});
-					tracker.map.panTo(coords);
-				}
-				else
-				{
-					tracker.map_marker.setPosition(coords);
-				}
-			},                                                                                                                                                                                       
-			error: function(data) 
+			// push new coords to iss route array for tracking line
+			tracker.drawRoute(coords);
+			tracker.iss_previous_coords = coords;
+
+			if(!tracker.map_marker)
 			{
-				
-			}                                                                                                                                     
+				tracker.map_marker =  new google.maps.Marker({
+					position: coords,
+					map: tracker.map,
+					title: "ISS",
+					icon: "http://www.n2yo.com/inc/saticon.php?t=0&s=25544&c="
+				});
+				tracker.map.panTo(coords);
+			}
+			else
+			{
+				tracker.map_marker.setPosition(coords);
+			}
 		});
 	},
 	
@@ -151,8 +145,6 @@ var tracker = {
 			tracker.user_lon = position.coords.longitude;
 
 			var coords = new google.maps.LatLng(tracker.user_lat, tracker.user_lon);
-			console.log(tracker.map);
-
 			
 			tracker.user_marker =  new google.maps.Marker({
 				position: coords,
@@ -160,6 +152,22 @@ var tracker = {
 				title: "You are here!"
 			});
 
+			// Display the next flyby for the users location
+			tracker.getNextFlyby();
+		});
+	},
+
+	getNextFlyby: function()
+	{
+		$.getJSON('http://api.open-notify.org/iss-pass.json?lat=' + tracker.user_lat + '&lon=' + tracker.user_lon + '&alt=20&n=1&callback=?', function(data) {
+			data['response'].forEach(function (d) {
+				var date = new Date(d['risetime']*1000).toDateString();
+				var duration = Math.round(d['duration'] / 60);
+
+				$(".flyby").removeClass('hide');
+				$("#flybydate").html(date);
+				$("#flybyduration").html(duration);
+			});
 		});
 	},
 
